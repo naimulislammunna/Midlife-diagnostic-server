@@ -18,8 +18,6 @@ app.listen(port, () =>{
     
 })
 
-
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@express-explore.use1c.mongodb.net/?retryWrites=true&w=majority&appName=express-explore`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -36,10 +34,18 @@ async function run() {
     await client.connect();
     const usersCollection = client.db('midlife').collection('users')
 
+    // Users store to DB
     app.post('/users', async(req, res)=>{
         const query = req.body;
         const result = await usersCollection.insertOne(query);
         res.send(result);
+    })
+    app.get('/users', async (req, res) =>{
+        const email= req.query.email;
+        const query = {email: email}
+        const result = await usersCollection.findOne(query);
+        res.send(result)
+        
     })
     
 
