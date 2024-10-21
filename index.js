@@ -32,7 +32,8 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-    const usersCollection = client.db('midlife').collection('users')
+    const usersCollection = client.db('midlife').collection('users');
+    const testCollection = client.db('midlife').collection('tests');
 
     // Users store to DB
     app.post('/users', async(req, res)=>{
@@ -46,6 +47,11 @@ async function run() {
         const result = await usersCollection.findOne(query);
         res.send(result)
         
+    })
+
+    app.get('/tests', async(req, res)=>{
+      const result = await testCollection.find().toArray();
+      res.send(result);
     })
     
 
