@@ -74,6 +74,12 @@ async function run() {
       res.send(result);
     });
 
+    app.post('/add-test', async (req, res) => {
+      const query = req.body;
+      const result = await testCollection.insertOne(query);
+      res.send(result);
+    })
+
     app.post('/booking', async (req, res) => {
       const doc = req.body;
       const result = await bookingCollection.insertOne(doc)
