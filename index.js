@@ -10,12 +10,12 @@ app.use(cors())
 app.use(express.json())
 
 app.get('/', (req, res) => {
-    res.send('hello i am server')
+  res.send('hello i am server')
 })
 
-app.listen(port, () =>{
-    console.log('server is running and port:', port);
-    
+app.listen(port, () => {
+  console.log('server is running and port:', port);
+
 })
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@express-explore.use1c.mongodb.net/?retryWrites=true&w=majority&appName=express-explore`;
@@ -34,38 +34,68 @@ async function run() {
     await client.connect();
     const usersCollection = client.db('midlife').collection('users');
     const testCollection = client.db('midlife').collection('tests');
+    const bookingCollection = client.db('midlife').collection('booking');
 
     // Users store to DB
-    app.post('/users', async(req, res)=>{
-        const query = req.body;
-        const result = await usersCollection.insertOne(query);
-        res.send(result);
+    app.post('/users', async (req, res) => {
+      const query = req.body;
+      const result = await usersCollection.insertOne(query);
+      res.send(result);
     })
-    app.get('/users', async (req, res) =>{
-        const email= req.query.email;
-        const query = {email: email}
-        const result = await usersCollection.findOne(query);
-        res.send(result)
-        
+    app.get('/users', async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email }
+      const result = await usersCollection.findOne(query);
+      res.send(result)
+
     })
 
-    app.get('/tests', async(req, res)=>{
+    app.get('/tests', async (req, res) => {
       const result = await testCollection.find().toArray();
       res.send(result);
     });
 
-    app.get('/test/:id', async(req, res)=>{
+    app.get('/test/:id', async (req, res) => {
       const id = req.params.id;
-      
+
       let query = {}
-      if(id){
-        query = {_id: new ObjectId(id)}
+      if (id) {
+        query = { _id: new ObjectId(id) }
       }
 
       const result = await testCollection.findOne(query);
       res.send(result);
     });
-    
+
+    app.post('/booking', async (req, res) => {
+      const doc = req.body;
+      const result = await bookingCollection.insertOne(doc)
+      res.send(result);
+    });
+
+    app.get('/booking', async (req, res) => {
+      const email = req.query.email;
+
+      let query = {}
+      if (email) {
+        query = { email: email }
+      }
+      const result = await bookingCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.delete('/booking/:id', async (req, res) => {
+      const id = req.params.id;
+
+      let query = {}
+      if (id) {
+        query = { _id: new ObjectId(id) }
+      }
+
+      const result = await bookingCollection.deleteOne(query);
+      res.send(result);
+    });
+
 
   } finally {
 
