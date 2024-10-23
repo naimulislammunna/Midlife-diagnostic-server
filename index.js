@@ -123,7 +123,7 @@ async function run() {
 
     app.patch('/users/:id', async (req, res) => {
       const id = req.params.id;
-      
+
       let query = {}
       if (id) {
         query = { _id: new ObjectId(id) }
@@ -136,6 +136,24 @@ async function run() {
       }
 
       const result = await usersCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    app.patch('/users-role/:id', async (req, res) => {
+      const id = req.params.id;
+
+      let query = {}
+      if (id) {
+        query = { _id: new ObjectId(id) }
+      }
+
+      const updateDoc = {
+        $set: {
+          role: "Admin"
+        }
+      }
+      const option = { upsert: true }
+      const result = await usersCollection.updateOne(query, updateDoc, option);
       res.send(result);
     });
 
