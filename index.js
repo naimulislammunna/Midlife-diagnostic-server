@@ -109,6 +109,36 @@ async function run() {
       res.send(result);
     });
 
+    app.delete('/all-test/:id', async (req, res) => {
+      const id = req.params.id;
+
+      let query = {}
+      if (id) {
+        query = { _id: new ObjectId(id) }
+      }
+
+      const result = await testCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.patch('/users/:id', async (req, res) => {
+      const id = req.params.id;
+      
+      let query = {}
+      if (id) {
+        query = { _id: new ObjectId(id) }
+      }
+
+      const updateDoc = {
+        $set: {
+          status: "Blocked"
+        }
+      }
+
+      const result = await usersCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
 
   } finally {
 
