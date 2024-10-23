@@ -97,6 +97,12 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/all-booking', async (req, res) => {
+    
+      const result = await bookingCollection.find().toArray();
+      res.send(result);
+    });
+
     app.delete('/booking/:id', async (req, res) => {
       const id = req.params.id;
 
@@ -136,6 +142,44 @@ async function run() {
       }
 
       const result = await usersCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    app.patch('/users-role/:id', async (req, res) => {
+      const id = req.params.id;
+
+      let query = {}
+      if (id) {
+        query = { _id: new ObjectId(id) }
+      }
+
+      const updateDoc = {
+        $set: {
+          role: "Admin"
+        }
+      }
+      const option = { upsert: true }
+      const result = await usersCollection.updateOne(query, updateDoc, option);
+      res.send(result);
+    });
+
+    app.patch('/booking/:id', async (req, res) => {
+      const id = req.params.id;
+      const body = req.body;
+    
+      let query = {}
+      if (id) {
+        query = { _id: new ObjectId(id) }
+      }
+
+      const updateDoc = {
+        $set: {
+          result : body
+        }
+      }
+      const option = { upsert: true }
+
+      const result = await bookingCollection.updateOne(query, updateDoc, option);
       res.send(result);
     });
 
