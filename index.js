@@ -1,9 +1,10 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
-const cors = require('cors')
+const cors = require('cors');
 const app = express();
 const port = process.env.port || 5000;
 require('dotenv').config()
+const stripe = require('stripe')(process.env.SECRET_KEY);
 
 // midleware
 app.use(cors())
@@ -29,9 +30,9 @@ const client = new MongoClient(uri, {
   }
 });
 
+
 async function run() {
   try {
-    await client.connect();
     const usersCollection = client.db('midlife').collection('users');
     const testCollection = client.db('midlife').collection('tests');
     const bookingCollection = client.db('midlife').collection('booking');
@@ -45,6 +46,7 @@ async function run() {
 
     app.get('/user', async (req, res) => {
       const email = req.query.email;
+      
       const query = { email: email }
       const result = await usersCollection.findOne(query);
       res.send(result)
@@ -98,7 +100,7 @@ async function run() {
     });
 
     app.get('/all-booking', async (req, res) => {
-    
+
       const result = await bookingCollection.find().toArray();
       res.send(result);
     });
@@ -127,7 +129,7 @@ async function run() {
       res.send(result);
     });
 
-    app.patch('/users/:id', async (req, res) => {
+    app.patch('/block-users/:id', async (req, res) => {
       const id = req.params.id;
 
       let query = {}
@@ -138,6 +140,23 @@ async function run() {
       const updateDoc = {
         $set: {
           status: "Blocked"
+        }
+      }
+
+      const result = await usersCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+    app.patch('/active-users/:id', async (req, res) => {
+      const id = req.params.id;
+
+      let query = {}
+      if (id) {
+        query = { _id: new ObjectId(id) }
+      }
+
+      const updateDoc = {
+        $set: {
+          status: "Active"
         }
       }
 
@@ -166,7 +185,7 @@ async function run() {
     app.patch('/booking/:id', async (req, res) => {
       const id = req.params.id;
       const body = req.body;
-    
+
       let query = {}
       if (id) {
         query = { _id: new ObjectId(id) }
@@ -174,7 +193,7 @@ async function run() {
 
       const updateDoc = {
         $set: {
-          result : body
+          result: body
         }
       }
       const option = { upsert: true }
@@ -199,6 +218,38 @@ async function run() {
       const option = { upsert: true }
       const result = await usersCollection.updateOne(query, updateDoc, option);
       res.send(result);
+    });
+
+    app.get('/admin', async(req, res)=>{
+      const email = req.query.email;
+      console.log("admin", email);
+      
+      let query = {}
+      if (email) {
+        query = { email: email }
+      }
+      const result = await usersCollection.findOne(query);
+      res.send(result);
+      console.log("result admin", result);
+      
+    })
+
+    // stripe 
+
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+      
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ['card']
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret
+      });
+
     });
 
 
