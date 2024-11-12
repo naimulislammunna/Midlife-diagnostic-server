@@ -53,6 +53,29 @@ async function run() {
 
     })
 
+    app.patch('/user', async (req, res) => {
+      const email = req.query.email;
+      const info = req.body;
+      const {name, blood, district, upozila} = info;
+      
+      let query = {}
+      if (email) {
+        query = { email: email }
+      }
+
+      const updateDoc = {
+        $set: {
+          name: name,
+          blood: blood,
+          district: district,
+          upozila: upozila
+        }
+      }
+      const result = await usersCollection.updateOne(query, updateDoc);
+      res.send(result)
+
+    })
+
     app.get('/users', async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
@@ -73,6 +96,24 @@ async function run() {
       }
 
       const result = await testCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch('/booking/slots/:id', async (req, res) => {
+      const id = req.params.id;
+      const slot = req.body;
+      
+      let query = {}
+      if (id) {
+        query = { _id: new ObjectId(id) }
+      }
+      const updateDoc ={
+        $set: {
+          slots: slot.slot
+        }
+      }
+
+      const result = await testCollection.updateOne(query, updateDoc);
       res.send(result);
     });
 
@@ -222,7 +263,6 @@ async function run() {
 
     app.get('/admin', async(req, res)=>{
       const email = req.query.email;
-      console.log("admin", email);
       
       let query = {}
       if (email) {
@@ -230,7 +270,6 @@ async function run() {
       }
       const result = await usersCollection.findOne(query);
       res.send(result);
-      console.log("result admin", result);
       
     })
 
